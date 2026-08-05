@@ -36,6 +36,14 @@ Agents and CI constantly echo:
 
 ---
 
+
+
+## Demo
+
+![redactcli demo](demos/redactcli-demo.gif)
+
+*Stakes → agent dump → one pipe → CI blocks the PR.*
+
 ## Install
 
 ```bash

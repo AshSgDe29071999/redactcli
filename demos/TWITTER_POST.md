@@ -1,92 +1,102 @@
-# Social post pack — redactcli
+# Social post pack — redactcli (v2)
 
-Assets (local):
-- `demos/redactcli-demo.gif` (~176KB, autoplay-friendly)
-- `demos/redactcli-demo.mp4` (~120KB, for X native video)
-- `demos/redactcli-twitter-card.png` (static before/after)
+## Assets
 
-Raw URLs after push:
-- https://github.com/AshSgDe29071999/redactcli/raw/main/demos/redactcli-demo.gif
+| File | Use |
+|------|-----|
+| `demos/redactcli-demo.mp4` | **Prefer on X** (~16s, 226KB) |
+| `demos/redactcli-demo.gif` | Autoplay fallback (~16s, 294KB) |
+| `demos/redactcli-twitter-card.png` | Static 1200×675 |
+
+GitHub:
 - https://github.com/AshSgDe29071999/redactcli/raw/main/demos/redactcli-demo.mp4
+- https://github.com/AshSgDe29071999/redactcli/raw/main/demos/redactcli-demo.gif
 - https://github.com/AshSgDe29071999/redactcli/raw/main/demos/redactcli-twitter-card.png
+
+### Story beats in the video
+1. **Stakes** — about to paste agent logs / open PR  
+2. **Dump** — realistic secret lines (fake only)  
+3. **Fix** — `cat log \| redactcli`  
+4. **CI** — `redactcli scan` → exit 1 / Action FAILED  
+5. **CTA** — `pip install redactcli`
 
 ---
 
-## Tweet 1 (main post — paste this)
-
-**Attach:** `redactcli-demo.gif` or `redactcli-demo.mp4` (prefer MP4 on X)
+## Tweet 1 (main — attach MP4)
 
 ```
-Your AI agent just dumped this into a log:
+This is how AWS keys end up in Slack.
 
-AWS_ACCESS_KEY_ID=AKIA…
-GITHUB_TOKEN=ghp_…
-postgres://user:password@db/prod
------BEGIN RSA PRIVATE KEY-----
+Your agent dumps a session log.
+You paste it into chat.
+Or commit debug.log.
 
-One pipe. Gone.
+One pipe:
 
 cat agent.log | redactcli
 
-pip install redactcli
+CI can block the rest:
 
-CLI + GitHub Action. Offline. Free. MIT.
+redactcli scan .
+
+pip install redactcli
 https://github.com/AshSgDe29071999/redactcli
 ```
 
 ---
 
-## Tweet 2 (reply / thread — social proof + how)
+## Tweet 2 (thread)
 
 ```
-Why this exists:
+The scary part isn't "hackers."
 
-Coding agents and CI love to echo secrets.
-Humans then paste those logs into chat, PRs, and tickets.
+It's normal workflow:
 
-redactcli is pipe-friendly on purpose:
+• Claude / Codex / Cursor session log
+• "can someone check this error?"
+• paste into #eng-help
+• key is live for hours
 
-• stdin → stdout (agent-native)
-• `redactcli scan .` fails CI if secrets leak
-• GitHub Action included
-• zero runtime deps
+redactcli is offline, pipe-first, and has a GitHub Action that fails the PR when secrets show up.
+```
+
+---
+
+## Tweet 3 (thread)
+
+```
+Drop this in CLAUDE.md / AGENTS.md:
+
+Before sharing logs or env dumps:
+  cmd 2>&1 | redactcli
 
 PyPI: https://pypi.org/project/redactcli/
+Action: AshSgDe29071999/redactcli/action@v0.1.0
 ```
 
 ---
 
-## Tweet 3 (hook for builders)
+## LinkedIn
 
 ```
-If you ship agents, drop this in CLAUDE.md / AGENTS.md:
+Shipping coding agents without redaction is how cloud keys land in Slack.
 
-"Before pasting logs or env dumps, run:
- cmd 2>&1 | redactcli"
-
-One line. Fewer credential rotations. Happier security team.
-```
-
----
-
-## LinkedIn variant (longer)
-
-```
-Shipping coding agents without redaction is how AWS keys end up in Slack.
-
-I published redactcli — a small offline CLI + GitHub Action that redacts high-signal secrets from agent logs, diffs, and CI output.
+I built redactcli — a small offline CLI + GitHub Action that strips high-signal secrets from agent logs, diffs, and CI output.
 
 pip install redactcli
 cat dump.log | redactcli
-redactcli scan .
+redactcli scan .   # exit 1 if secrets found
 
 No cloud. No API key. MIT.
-Repo: https://github.com/AshSgDe29071999/redactcli
-PyPI: https://pypi.org/project/redactcli/
+https://github.com/AshSgDe29071999/redactcli
 ```
 
 ---
 
-## Hashtags (use 1–2 max on X; more on LinkedIn)
+## Posting checklist
 
-`#devtools` `#AI` `#security` `#python` `#githubactions`
+- [ ] Attach **MP4** (not a bare link)
+- [ ] First line = pain, not product name
+- [ ] Post Tue–Thu morning US
+- [ ] Reply with thread 2 + 3 within 2 minutes
+- [ ] Pin repo + put GIF near top of README
