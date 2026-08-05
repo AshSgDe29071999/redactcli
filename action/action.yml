@@ -1,0 +1,79 @@
+name: "redactcli Secret Scan"
+description: "Scan the workspace (or git diff) for secrets using redactcli; fail the job if any are found."
+author: "AshSgDe29071999"
+branding:
+  icon: "shield"
+  color: "red"
+
+inputs:
+  paths:
+    description: "Space-separated paths to scan (default: .)"
+    required: false
+    default: "."
+  min-confidence:
+    description: "Minimum pattern confidence: high or medium"
+    required: false
+    default: "medium"
+  fail-on-findings:
+    description: "Fail the step when secrets are found"
+    required: false
+    default: "true"
+  python-version:
+    description: "Python version for the runner"
+    required: false
+    default: "3.12"
+  version:
+    description: "redactcli version to install (default: latest from PyPI)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install redactcli
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -n "${{ inputs.version }}" ]; then
+          pip install "redactcli==${{ inputs.version }}"
+        else
+          pip install redactcli
+        fi
+        redactcli --version
+
+    - name: Scan for secrets
+      shell: bash
+      run: |
+        set -euo pipefail
+        ARGS=(scan --min-confidence "${{ inputs.min-confidence }}" --json)
+        if [ "${{ inputs.fail-on-findings }}" = "true" ]; then
+          ARGS+=(--fail-on-findings)
+        else
+          ARGS+=(--no-fail-on-findings)
+        fi
+        # shellcheck disable=SC2206
+        PATHS=(${{ inputs.paths }})
+        # Collect files (skip VCS / venv / common noise)
+        mapfile -t FILES < <(
+          find "${PATHS[@]}" \
+            \( -name .git -o -name .venv -o -name node_modules -o -name dist -o -name build -o -name .tox \) -prune -o \
+            -type f \( -name '*.py' -o -name '*.js' -o -name '*.ts' -o -name '*.tsx' -o -name '*.json' -o -name '*.yml' -o -name '*.yaml' -o -name '*.env' -o -name '*.md' -o -name '*.toml' -o -name '*.sh' -o -name '*.tf' -o -name '*.txt' \) -print \
+            2>/dev/null | head -n 5000
+        )
+        if [ "${#FILES[@]}" -eq 0 ]; then
+          echo "No matching files to scan."
+          exit 0
+        fi
+        set +e
+        redactcli "${ARGS[@]}" "${FILES[@]}"
+        code=$?
+        set -e
+        if [ "$code" -ne 0 ]; then
+          echo "::error::redactcli found secrets (exit $code). See job log for findings."
+          exit "$code"
+        fi
