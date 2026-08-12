@@ -1,55 +1,59 @@
 # redactcli
 
-**Redact secrets from agent output, logs, diffs, and CI.**
-
-Pipe-friendly CLI + GitHub Action. No cloud. No API key. Designed for humans **and** coding agents.
+**Stop agents and CI from leaking live secrets.** Pipe-friendly CLI + GitHub Action. No cloud. No API key.
 
 ```bash
-pip install redactcli
+# try — no install
+uvx redactcli --help
+npx --yes github:AshSgDe29071999/redactcli --help
 
-# Pipe agent / CI logs
-cat agent.log | redactcli
-
-# Scan a tree; exit 1 if secrets found
-redactcli scan src/ .env.example
-
-# Rewrite a file in place
-redactcli redact -i ./notes.md
+# pipe agent / CI logs
+echo 'token=ghp_…' | uvx redactcli
 ```
 
 [![PyPI](https://img.shields.io/pypi/v/redactcli.svg)](https://pypi.org/project/redactcli/)
 [![Python](https://img.shields.io/pypi/pyversions/redactcli.svg)](https://pypi.org/project/redactcli/)
 
+Designed for humans **and** coding agents.
+
 ---
 
 ## Why
 
-Agents and CI constantly echo:
-
-- AWS keys
-- GitHub / GitLab / npm / PyPI tokens
-- Private keys
-- Database URLs with passwords
-- JWTs and Slack/Stripe keys
+Agents and CI constantly echo AWS keys, GitHub / GitLab / npm / PyPI tokens, private keys, database URLs with passwords, JWTs, and Slack/Stripe keys.
 
 `redactcli` strips those **before** logs leave your machine or a PR is merged.
 
 ---
 
-
-
-## Demo
-
-![redactcli demo](demos/redactcli-demo.gif)
-
-*Stakes → agent dump → one pipe → CI blocks the PR.*
-
 ## Install
 
+### Homebrew
+
 ```bash
-pip install redactcli
-# or one-shot
+brew tap ashsgde29071999/redactcli
+brew install redactcli
+```
+
+### Binary (no Python)
+
+Download the file for your OS from [Releases](https://github.com/AshSgDe29071999/redactcli/releases), `chmod +x`, put it on `PATH`.
+
+```bash
+# Linux x86_64 example
+curl -fsSL -o redactcli \
+  https://github.com/AshSgDe29071999/redactcli/releases/latest/download/redactcli-linux-x86_64
+chmod +x redactcli && ./redactcli --version
+```
+
+Or build one locally: `scripts/build-binary.sh` (PyInstaller).
+
+### uv / pipx / pip
+
+```bash
 uvx redactcli --help
+pipx install redactcli
+pip install redactcli
 ```
 
 Requires **Python 3.10+**. Zero runtime dependencies.
@@ -63,17 +67,11 @@ Requires **Python 3.10+**. Zero runtime dependencies.
 Read stdin and/or files; write redacted text to stdout.
 
 ```bash
-# stdin
 echo 'token=ghp_…' | redactcli
-echo 'token=ghp_…' | redactcli redact
-
-# files
 redactcli redact ./dump.txt
-redactcli redact -i ./dump.txt          # in place
-redactcli redact ./a.log -o ./a.clean   # to file
-
-# JSON for agents
-redactcli redact --json < dump.txt
+redactcli redact -i ./notes.md          # in place
+redactcli redact ./a.log -o ./a.clean
+redactcli redact --json < dump.txt      # for agents
 ```
 
 ### `scan`
@@ -83,12 +81,10 @@ Report findings without rewriting. Exit code **1** if anything matched (CI-frien
 ```bash
 redactcli scan .
 redactcli scan --json src/
-redactcli scan --no-fail-on-findings .   # report only
+redactcli scan --no-fail-on-findings .
 ```
 
 ### `patterns`
-
-List built-in rules.
 
 ```bash
 redactcli patterns
@@ -107,18 +103,95 @@ redactcli patterns --json
 
 ---
 
+## pre-commit
+
+Put this **above** other hooks so a leaked token never lands in git.
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/AshSgDe29071999/redactcli
+    rev: v0.1.1
+    hooks:
+      - id: redactcli
+```
+
+```bash
+pre-commit install
+git add . && git commit -m "test"
+```
+
+---
+
+## GitLab CI
+
+```yaml
+# .gitlab-ci.yml
+include:
+  - remote: https://raw.githubusercontent.com/AshSgDe29071999/redactcli/v0.1.1/templates/gitlab-ci.yml
+```
+
+Override paths or confidence with `REDACTCLI_PATHS` and `REDACTCLI_MIN_CONFIDENCE`.
+
+---
+
+## GitHub Action
+
+Fails the check when the diff or workspace contains secrets — the Marketplace listing uses this GIF:
+
+![Failed PR: redactcli Secret Scan](demos/redactcli-failed-pr.gif)
+
+```yaml
+# .github/workflows/secret-scan.yml
+name: Secret scan
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  redactcli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: AshSgDe29071999/redactcli@v0.1.1
+        with:
+          scan-mode: git-diff
+          min-confidence: medium
+          fail-on-findings: true
+```
+
+`uses: AshSgDe29071999/redactcli/action@v0.1.1` still works.
+
+### Action inputs
+
+| Input | Default | Description |
+|------|---------|-------------|
+| `scan-mode` | `workspace` | `workspace` or `git-diff` |
+| `paths` | `.` | Paths to scan (workspace mode) |
+| `min-confidence` | `medium` | `high` or `medium` |
+| `fail-on-findings` | `true` | Fail job on secrets |
+| `python-version` | `3.12` | Runner Python |
+| `version` | latest | Pin PyPI version |
+
+To list this Action on the GitHub Marketplace: open the `v0.1.1` release → **Publish this Action to the GitHub Marketplace** → category *Security* / *Continuous integration*. Use `demos/redactcli-failed-pr.gif` as the listing image.
+
+---
+
 ## Built-in detections (high signal)
 
-- PEM / OpenSSH private keys  
-- AWS access key ids (`AKIA…` / `ASIA…`)  
-- AWS secret keys near assignment keywords  
-- GitHub tokens (`ghp_`, `github_pat_`, …)  
-- GitLab (`glpat-`), Slack, Stripe, OpenAI, Anthropic  
-- PyPI / npm tokens  
-- JWTs  
-- DB / HTTP URLs with embedded credentials  
-- Common `api_key=` / `password=` assignments  
-- Google API keys, Azure AccountKey  
+- PEM / OpenSSH private keys
+- AWS access key ids (`AKIA…` / `ASIA…`)
+- AWS secret keys near assignment keywords
+- GitHub tokens (`ghp_`, `github_pat_`, …)
+- GitLab (`glpat-`), Slack, Stripe, OpenAI, Anthropic
+- PyPI / npm tokens
+- JWTs
+- DB / HTTP URLs with embedded credentials
+- Common `api_key=` / `password=` assignments
+- Google API keys, Azure AccountKey
 
 Use `redactcli patterns` for the full list.
 
@@ -145,42 +218,6 @@ Use `redactcli patterns` for the full list.
 ```bash
 redactcli scan --rules rules.json .
 ```
-
----
-
-## GitHub Action
-
-```yaml
-# .github/workflows/secret-scan.yml
-name: Secret scan
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-jobs:
-  redactcli:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: AshSgDe29071999/redactcli/action@v0.1.0
-        with:
-          paths: .
-          min-confidence: medium
-          fail-on-findings: true
-```
-
-Or pin to a commit SHA after release.
-
-### Action inputs
-
-| Input | Default | Description |
-|-------|---------|-------------|
-| `paths` | `.` | Paths to scan |
-| `min-confidence` | `medium` | `high` or `medium` |
-| `fail-on-findings` | `true` | Fail job on secrets |
-| `python-version` | `3.12` | Runner Python |
-| `version` | latest | Pin PyPI version |
 
 ---
 

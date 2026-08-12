@@ -1,0 +1,31 @@
+{
+  "name": "redactcli",
+  "version": "0.1.1",
+  "description": "Redact secrets from agent output, logs, diffs, and CI — npx wrapper around the PyPI CLI / release binary",
+  "license": "MIT",
+  "bin": {
+    "redactcli": "./npm/cli.js"
+  },
+  "files": [
+    "npm/cli.js"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AshSgDe29071999/redactcli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AshSgDe29071999/redactcli/issues"
+  },
+  "homepage": "https://github.com/AshSgDe29071999/redactcli#readme",
+  "keywords": [
+    "secrets",
+    "redaction",
+    "security",
+    "cli",
+    "ci",
+    "agents"
+  ]
+}

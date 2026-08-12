@@ -3,6 +3,8 @@ build/
 demos/frames/
 demos/frames_v2/
 dist/
+node_modules/
+*.spec
 .DS_Store
 *.egg
 *.egg-info/

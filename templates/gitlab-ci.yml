@@ -1,0 +1,23 @@
+# Include from any GitLab project:
+#
+# include:
+#   - remote: https://raw.githubusercontent.com/AshSgDe29071999/redactcli/v0.1.1/templates/gitlab-ci.yml
+#
+# Override paths / confidence with variables:
+#   REDACTCLI_PATHS: "src/ .env.example"
+#   REDACTCLI_MIN_CONFIDENCE: high
+
+redactcli:
+  stage: test
+  image: python:3.12-slim
+  variables:
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    REDACTCLI_PATHS: "."
+    REDACTCLI_MIN_CONFIDENCE: "medium"
+  script:
+    - pip install --quiet redactcli
+    - redactcli --version
+    - redactcli scan --min-confidence "${REDACTCLI_MIN_CONFIDENCE}" ${REDACTCLI_PATHS}
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

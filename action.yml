@@ -1,5 +1,3 @@
-# Kept so existing `uses: AshSgDe29071999/redactcli/action@…` pins keep working.
-# Canonical Action (Marketplace) is the root action.yml.
 name: "redactcli Secret Scan"
 description: "Fail the job when high-signal secrets appear in the workspace or git diff. Local regex scan — no cloud, no API key."
 author: "AshSgDe29071999"
@@ -62,6 +60,7 @@ runs:
         else
           ARGS+=(--no-fail-on-findings)
         fi
+
         collect_workspace() {
           # shellcheck disable=SC2206
           local PATHS=(${{ inputs.paths }})
@@ -99,6 +98,7 @@ runs:
           echo "No matching files to scan."
           exit 0
         fi
+
         set +e
         redactcli "${ARGS[@]}" "${FILES[@]}"
         code=$?

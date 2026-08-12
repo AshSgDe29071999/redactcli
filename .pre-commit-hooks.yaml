@@ -1,0 +1,15 @@
+# Install in a consumer repo:
+#
+# repos:
+#   - repo: https://github.com/AshSgDe29071999/redactcli
+#     rev: v0.1.1
+#     hooks:
+#       - id: redactcli
+#
+- id: redactcli
+  name: redactcli
+  description: Block commits that contain high-signal secrets (tokens, keys, passwords)
+  language: python
+  entry: redactcli scan --min-confidence high
+  types: [text]
+  pass_filenames: true
