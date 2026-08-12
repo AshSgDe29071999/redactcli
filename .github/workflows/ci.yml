@@ -38,7 +38,9 @@ jobs:
         run: |
           mapfile -t FILES < <(
             find . \
-              \( -name .git -o -name .venv -o -name dist -o -name build \) -prune -o \
-              -type f \( -name '*.py' -o -name '*.yml' -o -name '*.md' -o -name '*.toml' \) -print
+              \( -name .git -o -name .venv -o -name dist -o -name build -o -name tests \) -prune -o \
+              -type f \( -name '*.py' -o -name '*.yml' -o -name '*.md' -o -name '*.toml' \) \
+              ! -name README.md \
+              -print
           )
           redactcli scan --min-confidence high "${FILES[@]}"

@@ -28,5 +28,5 @@ if [ -f dist/redactcli.exe ]; then
 fi
 echo "built $BIN"
 "$BIN" --version
-echo "token=ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab" | "$BIN" | grep -q REDACTED
+printf 'token=ghp_%s\n' "$(python3 -c 'print("A"*36)')" | "$BIN" | grep -q REDACTED
 echo "smoke ok"

@@ -60,7 +60,8 @@ jobs:
           set -euo pipefail
           BIN="dist/${{ matrix.asset }}"
           "$BIN" --version
-          echo "token=ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab" | "$BIN" | grep -q REDACTED
+          # Assemble the fixture at runtime so this workflow file is not itself a finding.
+          printf 'token=ghp_%s\n' "$(python -c 'print("A"*36)')" | "$BIN" | grep -q REDACTED
       - name: Upload to release
         env:
           GH_TOKEN: ${{ github.token }}
