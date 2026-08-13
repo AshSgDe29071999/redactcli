@@ -5,7 +5,7 @@
 ```bash
 # try — no install
 uvx redactcli --help
-npx --yes github:AshSgDe29071999/redactcli --help
+npx --yes redactcli --help
 
 # pipe agent / CI logs
 echo 'token=ghp_…' | uvx redactcli
@@ -54,6 +54,13 @@ Or build one locally: `scripts/build-binary.sh` (PyInstaller).
 uvx redactcli --help
 pipx install redactcli
 pip install redactcli
+```
+
+### npm / npx
+
+```bash
+npx --yes redactcli --help
+npm install -g redactcli
 ```
 
 Requires **Python 3.10+**. Zero runtime dependencies.
